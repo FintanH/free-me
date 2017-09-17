@@ -39,8 +39,9 @@ instance Functor f => Applicative (Free f) where
   pure = Pure
 
   -- | Base cases of <*>
-  (Pure f) <*> (Pure a) = Pure $ f a
-  (Pure f) <*> (Free freer) = Free $ fmap (fmap f) freer
+  -- (Pure f) <*> (Pure a) = Pure $ f a
+  -- (Pure f) <*> (Free freer) = Free $ fmap (fmap f) freer
+  (Pure f) <*> freer = f <$> freer
 
   -- | So, freeFunc :: f (Free f (a -> b)) <- this is cool because what does
   -- | <*> usually look like? That's right `f (a -> b) -> f a -> f b`
@@ -64,6 +65,15 @@ instance Functor f => Applicative (Free f) where
   -- | then wrap it all back up in Free!
   (Free freeFunc) <*> freer =
     Free $ fmap (<*> freer) freeFunc
+
+  -- | Somehow I figured out how to implement it the harder way
+  -- | while I was writing the blog! I was just forgetting to rewrap
+  -- | the unwrapped structure.
+  -- (Free freeFunc) <*> (Free freer) =
+  --   Free $ fmap (\innerFunc -> Free $ fmap (\inner -> innerFunc <*> inner) freer) freeFunc
+  --
+  -- (Free freeFunc) <*> (Pure a) =
+  --   Free $ fmap (\innerFunc -> innerFunc <*> Pure a) freeFunc
 
 instance Functor f => Monad (Free f) where
   return = pure
